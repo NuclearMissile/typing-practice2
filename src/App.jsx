@@ -1,8 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {Clock, Pause, Play, RotateCcw, Settings, Target, X, Zap} from 'lucide-react';
+import {Clock, ListRestart, Pause, Play, RotateCcw, Settings, Target, X, Zap} from 'lucide-react';
 
 const sampleTexts = {
-    test: ["test"],
     easy: [
         "The quick brown fox jumps over the lazy dog.",
         "Typing practice improves your speed and accuracy over time.",
@@ -48,28 +47,28 @@ const TypingPracticeApp = () => {
     const [errors, setErrors] = useState(0);
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(0);
-    const [status, setStatus] = useState('waiting'); // waiting, started, paused, completed
+    const [status, setStatus] = useState('waiting'); // waiting, playing, paused, completed
     const [showSettings, setShowSettings] = useState(false);
-    const [difficulty, setDifficulty] = useState('easy');
+    const [backspaceMode, setBackspaceMode] = useState('enable');
+    const [difficulty, setDifficulty] = useState('easy'); // easy, medium, hard
     const [currentText, setCurrentText] = useState('');
-    const [currentCharIndex, setCurrentCharIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     // Refs
-    const inputRef = useRef(null);
-    const intervalRef = useRef(null);
+    const timerRef = useRef(null);
     const textDisplayRef = useRef(null);
 
     // Timer effect
     useEffect(() => {
-        if (status === 'started') {
-            intervalRef.current = setInterval(() => {
+        if (status === 'playing') {
+            timerRef.current = setInterval(() => {
                 setTimeElapsed(prev => prev + 0.5);
             }, 500);
         } else {
-            clearInterval(intervalRef.current);
+            clearInterval(timerRef.current);
         }
 
-        return () => clearInterval(intervalRef.current);
+        return () => clearInterval(timerRef.current);
     }, [status]);
 
     // Calculate statistics
@@ -89,51 +88,56 @@ const TypingPracticeApp = () => {
 
     useEffect(() => calculateStats(), [calculateStats]);
 
+    // Reset game when difficulty changed
     useEffect(() => {
         setCurrentText(getRandomText(difficulty));
         resetTest();
     }, [difficulty]);
 
+    // Reset focus when status changed
     useEffect(() => {
-        if (status === 'started' || status === 'waiting') {
-            if (inputRef.current) {
-                inputRef.current.focus();
+        if (status === 'playing' || status === 'waiting') {
+            if (textDisplayRef.current) {
+                textDisplayRef.current.focus();
             }
         }
-    }, [status]);
+    }, [status, difficulty, backspaceMode]);
 
-    // Handle input change
-    const handleInputChange = (e) => {
-        if (status !== 'waiting' && status !== 'started') {
+    const handleKeyDown = (e) => {
+        if (status === 'paused' || status === 'completed') {
             return;
         }
 
-        if (status === 'waiting') {
-            setStatus('started');
-        }
+        if (e.key.length === 1 || (e.key === 'Backspace' && userInput.length > 0 && backspaceMode === 'enable')) {
+            e.preventDefault();
 
-        const value = e.target.value;
-
-        // Prevent typing beyond the text length
-        if (value.length > currentText.length) {
-            return;
-        }
-
-        setUserInput(value);
-        setCurrentCharIndex(value.length);
-
-        // Count errors
-        let errorCount = 0;
-        for (let i = 0; i < value.length; i++) {
-            if (value[i] !== currentText[i]) {
-                errorCount++;
+            if (status === 'waiting') {
+                setStatus('playing');
             }
-        }
-        setErrors(errorCount);
 
-        // Check if completed
-        if (value.length === currentText.length) {
-            setStatus('completed');
+            let newInput = userInput;
+            if (e.key === 'Backspace') {
+                // Handle backspace - remove the last character
+                newInput = userInput.slice(0, -1);
+            } else if (status !== 'completed' && currentText.length > userInput.length) {
+                // Add the typed character
+                newInput = userInput + e.key;
+            }
+            setUserInput(newInput);
+            setCurrentIndex(newInput.length);
+
+            let errorCount = 0;
+            for (let i = 0; i < newInput.length; i++) {
+                if (newInput[i] !== currentText[i]) {
+                    errorCount++;
+                }
+            }
+            setErrors(errorCount);
+
+            // Check if completed
+            if (newInput.length === currentText.length) {
+                setStatus('completed');
+            }
         }
     };
 
@@ -145,19 +149,12 @@ const TypingPracticeApp = () => {
         setWpm(0);
         setAccuracy(0);
         setStatus('waiting');
-        setCurrentCharIndex(0);
-    };
-
-    // Toggle pause
-    const togglePause = () => {
-        if (status === 'started') {
-            setStatus('paused');
-        } else if (status === 'paused') {
-            setStatus('started');
+        setCurrentIndex(0);
+        if (textDisplayRef.current) {
+            textDisplayRef.current.focus();
         }
     };
 
-    // Generate new text
     const getRandomText = (difficulty) => {
         let ret = sampleTexts[difficulty][Math.floor(Math.random() * sampleTexts[difficulty].length)];
         while (ret === currentText && sampleTexts[difficulty].length > 1) {
@@ -166,7 +163,6 @@ const TypingPracticeApp = () => {
         return ret;
     };
 
-    // Format time
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
@@ -184,7 +180,7 @@ const TypingPracticeApp = () => {
                 } else {
                     className += 'text-red-600 bg-red-100';
                 }
-            } else if (index === currentCharIndex) {
+            } else if (index === currentIndex) {
                 className += 'text-gray-800 bg-blue-200 animate-pulse';
             } else {
                 className += 'text-gray-600';
@@ -242,23 +238,13 @@ const TypingPracticeApp = () => {
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <div className="mb-6">
                         <div
-                            className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200 min-h-40 leading-relaxed"
+                            className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200 min-h-40 leading-relaxed focus:border-blue-500 focus:outline-none"
                             ref={textDisplayRef}
+                            tabIndex={0}
+                            onKeyDown={handleKeyDown}
                         >
                             {renderText()}
                         </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <textarea
-                            ref={inputRef}
-                            value={userInput}
-                            onChange={handleInputChange}
-                            placeholder="Start typing here..."
-                            disabled={status === 'completed' || status === 'paused'}
-                            className="w-full h-40 p-4 border-2 border-gray-300 rounded-lg resize-none focus:border-blue-500 focus:outline-none text-lg"
-                            autoFocus
-                        />
                     </div>
 
                     {/* Progress Bar */}
@@ -278,7 +264,13 @@ const TypingPracticeApp = () => {
                     {/* Control Buttons */}
                     <div className="flex flex-wrap gap-3 justify-center">
                         <button
-                            onClick={togglePause}
+                            onClick={() => {
+                                if (status === 'playing') {
+                                    setStatus('paused');
+                                } else if (status === 'paused') {
+                                    setStatus('playing');
+                                }
+                            }}
                             disabled={status === 'waiting' || status === 'completed'}
                             className="flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
@@ -301,6 +293,7 @@ const TypingPracticeApp = () => {
                             }}
                             className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                         >
+                            <ListRestart className="w-4 h-4 mr-2"/>
                             New Text
                         </button>
 
@@ -320,15 +313,28 @@ const TypingPracticeApp = () => {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Difficulty Level
+                                Difficulty
                             </label>
                             <select
                                 value={difficulty}
-                                onChange={(e) => setDifficulty(e.target.value)}
+                                onChange={e => setDifficulty(e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                             >
                                 {Object.keys(sampleTexts).map(
                                     difficulty => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Backspace
+                            </label>
+                            <select
+                                value={backspaceMode}
+                                onChange={e => setBackspaceMode(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                            >
+                                <option key="enable" value="enable">enable</option>
+                                <option key="disable" value="disable">disable</option>
                             </select>
                         </div>
                     </div>
