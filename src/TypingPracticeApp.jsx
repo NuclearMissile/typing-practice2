@@ -195,7 +195,9 @@ const TypingPracticeApp = () => {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <header className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Typing Practice</h1>
+                    <a href="https://github.com/NuclearMissile/typing-practice2" target="_blank" rel="noreferrer noopener">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">Typing Practice</h1>
+                    </a>
                     <p className="text-gray-600">Improve your typing speed and accuracy</p>
                 </header>
 
