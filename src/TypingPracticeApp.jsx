@@ -1,44 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Clock, ListRestart, Pause, Play, RotateCcw, Settings, Target, X, Zap} from 'lucide-react';
-
-const sampleTexts = {
-    easy: [
-        "The quick brown fox jumps over the lazy dog.",
-        "Typing practice improves your speed and accuracy over time.",
-        "React is a JavaScript library for building user interfaces.",
-        "Practice makes perfect, especially when it comes to typing skills.",
-        "Learning to type without looking at the keyboard is called touch typing.",
-        "Simple sentences help beginners develop basic typing skills.",
-        "Regular practice is the key to becoming a proficient typist.",
-        "Good posture is important when typing for extended periods.",
-        "Typing is an essential skill in today's digital world.",
-        "Focus on accuracy first, then gradually increase your speed."
-    ],
-    medium: [
-        "Programming is the art of telling another human what one wants the computer to do.",
-        "The best way to predict the future is to invent it. Alan Kay said that.",
-        "Typing quickly and accurately is an essential skill for modern computer users.",
-        "JavaScript is a high-level, often just-in-time compiled language that conforms to the ECMAScript specification.",
-        "React uses a virtual DOM to efficiently update the UI when the underlying data changes.",
-        "Efficient typing can significantly increase your productivity in various computer-related tasks.",
-        "The QWERTY keyboard layout was designed in the 1870s for mechanical typewriters to prevent jamming.",
-        "Touch typing involves placing your fingers on the home row keys and typing without looking at the keyboard.",
-        "Modern keyboards have evolved from mechanical typewriters but maintain the same basic layout and functionality.",
-        "Learning keyboard shortcuts can save time and increase efficiency when working with computer applications."
-    ],
-    hard: [
-        "The journey of a thousand miles begins with a single step. Typing efficiently is similar - it starts with learning the correct finger positions.",
-        "In computer science, artificial intelligence, sometimes called machine intelligence, is intelligence demonstrated by machines, unlike the natural intelligence displayed by humans.",
-        "The World Wide Web (WWW), commonly known as the Web, is an information system where documents and other web resources are identified by Uniform Resource Locators, which may be interlinked by hypertext.",
-        "Quantum computing is the use of quantum-mechanical phenomena such as superposition and entanglement to perform computation. Computers that perform quantum computations are known as quantum computers.",
-        "The process of developing a structured set of instructions to be followed by a computer or electronic device to perform a specific task or solve a particular problem is called computer programming.",
-        "The development of typing skills requires consistent practice and attention to technique, including proper finger placement, posture, and rhythmic keystroke patterns that maximize efficiency and minimize strain.",
-        "Neuroplasticity, the brain's ability to reorganize itself by forming new neural connections, plays a crucial role in learning complex motor skills such as touch typing, allowing for improved speed and accuracy over time.",
-        "The evolution of human-computer interaction has been significantly influenced by advancements in input methods, from punch cards and mechanical keyboards to touchscreens and voice recognition, each requiring different skill sets and adaptations.",
-        "Professional typists often achieve speeds exceeding 100 words per minute through a combination of muscle memory, anticipatory reading, and specialized techniques that minimize unnecessary finger movement and maximize keystroke efficiency.",
-        "The integration of ergonomic principles into keyboard design aims to reduce the risk of repetitive strain injuries by promoting natural wrist and hand positions, appropriate key resistance, and optimal key spacing for different hand sizes."
-    ]
-};
+import sampleTexts from "./SampleText.js";
 
 const TypingPracticeApp = () => {
     // State management
@@ -311,8 +273,7 @@ const TypingPracticeApp = () => {
 
                 {/* Settings Panel */}
                 {showSettings && (<div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">Settings</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Difficulty
