@@ -153,11 +153,12 @@ const TypingPracticeApp = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+            <div className="min-w-4xl max-w-4xl">
                 {/* Header */}
                 <header className="text-center mb-8">
-                    <a href="https://github.com/NuclearMissile/typing-practice2" target="_blank" rel="noreferrer noopener">
+                    <a href="https://github.com/NuclearMissile/typing-practice2" target="_blank"
+                       rel="noreferrer noopener">
                         <h1 className="text-4xl font-bold text-gray-800 mb-2">Typing Practice</h1>
                     </a>
                     <p className="text-gray-600">Improve your typing speed and accuracy</p>
